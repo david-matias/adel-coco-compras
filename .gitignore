@@ -147,3 +147,34 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Dependências de Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Builds e Distribuição
+dist/
+build/
+.output/
+
+# Arquivos de Ambiente e Credenciais (Segurança)
+.env
+.env.local
+.env.production
+*.clasprc.json
+config.json
+
+# Python e Logs
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+venv/
+.venv/
+
+# IDEs e Editores
+.vscode/
+.idea/
+.DS_Store
