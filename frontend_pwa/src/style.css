@@ -1,0 +1,49 @@
+:root {
+  --adel-red: #A62B2B;
+  --adel-red-dark: #821F1F;
+  --adel-bg-gray: #EAEAEA;
+  --adel-card-border: #A62B2B;
+}
+
+body {
+  background-color: var(--adel-bg-gray) !important;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Navbar Personalizada no tom Vermelho Adel */
+.bg-adel {
+  background-color: var(--adel-red) !important;
+}
+
+/* Cards com cantos arredondados e bordas sutis conforme o layout */
+.card-adel {
+  border-radius: 12px !important;
+  border: 1px solid rgba(166, 43, 43, 0.2) !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+}
+
+.card-header-adel {
+  background-color: #ffffff !important;
+  border-bottom: 2px solid var(--adel-red) !important;
+  border-top-left-radius: 12px !important;
+  border-top-right-radius: 12px !important;
+}
+
+/* Botões com a cor oficial */
+.btn-adel {
+  background-color: var(--adel-red) !important;
+  border-color: var(--adel-red) !important;
+  color: #ffffff !important;
+}
+
+.btn-adel:hover {
+  background-color: var(--adel-red-dark) !important;
+  border-color: var(--adel-red-dark) !important;
+}
+
+/* Estilo do Logo na Navbar */
+.logo-navbar {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+}
