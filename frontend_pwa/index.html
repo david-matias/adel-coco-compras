@@ -4,109 +4,56 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Adel Coco - Portal do Comprador</title>
-    <link rel="stylesheet" href="/src/style.css" />
     <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="./node_modules/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/src/style.css" />
   </head>
-  <body class="bg-light">
+  <body class="bg-light pb-5 mb-4">
     <!-- Navbar / Cabeçalho com Logo Adel Coco -->
     <nav class="navbar navbar-dark bg-adel sticky-top shadow-sm py-2">
       <div class="container-fluid d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2">
-          <!-- Inclusão do Logo -->
-          <img src="/logo.png" alt="Adel Coco" class="logo-navbar" />
-          <span class="navbar-brand mb-0 h5 fw-bold text-white d-none d-sm-inline-block">
-            Portal do Comprador
-          </span>
+          <img src="/logo.png" alt="Adel Coco" class="logo-navbar" style="height: 35px;" />
+          <span class="navbar-brand mb-0 h6 fw-bold text-white">Portal do Comprador</span>
         </div>
-        <span id="statusConexao" class="badge bg-success fs-6">
+        <span id="statusConexao" class="badge bg-success">
           <i class="bi bi-wifi me-1"></i>Online
         </span>
       </div>
     </nav>
 
-    <!-- Banner de Fila Offline -->
-    <div id="bannerOffline" class="alert alert-warning mb-0 text-center rounded-0 d-none" role="alert">
-      <i class="bi bi-cloud-slash me-2"></i>
+    <!-- Banner Offline -->
+    <div id="bannerOffline" class="alert alert-warning mb-0 text-center rounded-0 d-none small py-2" role="alert">
+      <i class="bi bi-cloud-slash me-1"></i>
       <span id="textoPendentes">Existem lançamentos salvos no aparelho aguardando conexão.</span>
     </div>
 
-    <div class="container py-3">
-      <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3">
-          <h5 class="card-title mb-0 fw-bold text-secondary">
-            <i class="bi bi-cart-plus me-2"></i>Novo Lançamento de Carga
-          </h5>
-        </div>
-        <div class="card-body">
-          <form id="formCompra">
-            
-            <!-- Seleção do Tipo de Coco (Toggle) -->
-            <label class="form-label fw-bold small text-muted">TIPO DE MATÉRIA-PRIMA</label>
-            <div class="btn-group w-100 mb-3" role="group">
-              <input type="radio" class="btn-check" name="tipo_coco" id="tipoVerde" value="Coco Verde" checked />
-              <label class="btn btn-outline-success py-2 fw-bold" for="tipoVerde">
-                <i class="bi bi-circle-fill me-1 text-success"></i>Coco Verde
-              </label>
+    <!-- Container dinâmico das Telas -->
+    <main class="container py-3" id="appContainer">
+      <!-- O conteúdo da tela ativa será injetado aqui via TypeScript -->
+    </main>
 
-              <input type="radio" class="btn-check" name="tipo_coco" id="tipoSeco" value="Coco Seco" />
-              <label class="btn btn-outline-warning py-2 fw-bold" for="tipoSeco">
-                <i class="bi bi-circle-fill me-1 text-warning"></i>Coco Seco
-              </label>
-            </div>
-
-            <!-- Dados da Compra -->
-            <div class="mb-3">
-              <label for="fornecedor" class="form-label fw-bold small text-muted">FORNECEDOR / FAZENDA</label>
-              <input type="text" id="fornecedor" class="form-control form-control-lg" placeholder="Nome do fornecedor" required />
-            </div>
-
-            <div class="row g-2 mb-3">
-              <div class="col-6">
-                <label for="previsaoEntrega" class="form-label fw-bold small text-muted">PREVISÃO ENTREGA</label>
-                <input type="date" id="previsaoEntrega" class="form-control form-control-lg" required />
-              </div>
-              <div class="col-6">
-                <label for="logistica" class="form-label fw-bold small text-muted">LOGÍSTICA</label>
-                <select id="logistica" class="form-select form-select-lg" required>
-                  <option value="TERCEIRO">Terceiro</option>
-                  <option value="FROTA">Frota Própria</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row g-2 mb-3">
-              <div class="col-6">
-                <label id="labelQuantidade" for="quantidade" class="form-label fw-bold small text-muted">QUANTIDADE (FRUTOS)</label>
-                <input type="number" id="quantidade" class="form-control form-control-lg" placeholder="0" min="1" step="any" required />
-              </div>
-              <div class="col-6">
-                <label id="labelValorUnitario" for="valorUnitario" class="form-label fw-bold small text-muted">PREÇO UN. (R$/FRUTO)</label>
-                <input type="number" id="valorUnitario" class="form-control form-control-lg" placeholder="0.00" min="0.01" step="0.01" required />
-              </div>
-            </div>
-
-            <!-- Valor Total Calculado -->
-            <div class="p-3 bg-light rounded mb-3 border">
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="fw-bold text-muted small">VALOR TOTAL ESTIMADO:</span>
-                <span id="displayValorTotal" class="h4 mb-0 fw-bold text-primary">R$ 0,00</span>
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="observacao" class="form-label fw-bold small text-muted">OBSERVAÇÕES (OPCIONAL)</label>
-              <textarea id="observacao" class="form-control" rows="2" placeholder="Qualidade, padrão, rota..."></textarea>
-            </div>
-
-            <!-- Botão de Ação -->
-            <button type="submit" id="btnSalvar" class="btn btn-primary btn-lg w-100 py-3 fw-bold shadow-sm">
-              <i class="bi bi-check-circle-fill me-2"></i>Registrar Carga
-            </button>
-          </form>
-        </div>
+    <!-- Barra de Navegação Inferior (Bottom Nav - Padrão do Protótipo) -->
+    <nav class="navbar fixed-bottom bg-white border-top shadow-sm py-1">
+      <div class="container-fluid d-flex justify-content-around text-center">
+        <button class="btn text-danger p-0 nav-btn" data-target="form">
+          <i class="bi bi-plus-circle-fill fs-4 d-block"></i>
+          <small style="font-size: 10px;" class="fw-bold">Nova Carga</small>
+        </button>
+        <button class="btn text-muted p-0 nav-btn" data-target="minhas-compras">
+          <i class="bi bi-list-check fs-4 d-block"></i>
+          <small style="font-size: 10px;" class="fw-bold">Minhas</small>
+        </button>
+        <button class="btn text-muted p-0 nav-btn" data-target="projecao">
+          <i class="bi bi-graph-up-arrow fs-4 d-block"></i>
+          <small style="font-size: 10px;" class="fw-bold">Estoque</small>
+        </button>
+        <button class="btn text-muted p-0 nav-btn" data-target="teto-preco">
+          <i class="bi bi-tag-fill fs-4 d-block"></i>
+          <small style="font-size: 10px;" class="fw-bold">Teto Preço</small>
+        </button>
       </div>
-    </div>
+    </nav>
 
     <script type="module" src="/src/main.ts"></script>
   </body>
