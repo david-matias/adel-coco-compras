@@ -1,5 +1,5 @@
 import { OfflineStore } from './offlineStore';
-import { CargaPayload } from '../types/compra';
+import type { CargaPayload } from '../types/compra';
 
 // URL do Web App do Google Apps Script (Será substituída pela URL real após o deploy do GAS)
 const GAS_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbwjc6rrBevE3N0Kc_3-1qtDtsIrK97NyO_kocSk0El7pTZTOuGrmymau71DYBwzj1kL/exec';

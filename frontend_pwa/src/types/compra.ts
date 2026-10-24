@@ -5,8 +5,8 @@ export type StatusCarga = 'PREVISTO' | 'CANCELADO';
 export interface CompradorPayload {
   email: string;
   fornecedor: string;
-  previsao_entrega: string; // Formato YYYY-MM-DD
-  quantidade_prevista: number; // Frutos (Verde) ou KG (Seco)
+  previsao_entrega: string;
+  quantidade_prevista: number;
   valor_unitario: number;
   valor_total: number;
   logistica: ModalidadeLogistica;
@@ -19,6 +19,6 @@ export interface CargaPayload {
   comprador: CompradorPayload;
   status: StatusCarga;
   timestamps: {
-    criacao: string; // ISO String
+    criacao: string;
   };
 }

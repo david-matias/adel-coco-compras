@@ -1,10 +1,10 @@
-import { CargaPayload, TipoCoco, ModalidadeLogistica } from '../types/compra';
+import type { CargaPayload, TipoCoco, ModalidadeLogistica } from '../types/compra';
 import { OfflineStore } from '../services/offlineStore';
 
+// Constante padrão de rendimento industrial para o Coco Verde
+const LITROS_POR_FRUTO_VERDE = 0.4; // 400ml por fruto
+
 export class FormView {
-  /**
-   * Retorna o HTML estruturado do formulário de lançamento
-   */
   static render(): string {
     return `
       <div class="card card-adel border-0 shadow-sm">
@@ -16,7 +16,7 @@ export class FormView {
         <div class="card-body">
           <form id="formCompra">
             
-            <!-- Seleção do Tipo de Coco (Toggle) -->
+            <!-- Seleção do Tipo de Coco -->
             <label class="form-label fw-bold small text-muted">TIPO DE MATÉRIA-PRIMA</label>
             <div class="btn-group w-100 mb-3" role="group">
               <input type="radio" class="btn-check" name="tipo_coco" id="tipoVerde" value="Coco Verde" checked />
@@ -51,22 +51,30 @@ export class FormView {
               </div>
             </div>
 
-            <!-- Quantidade e Preço Unitário -->
-            <div class="row g-2 mb-3">
+            <!-- Quantidade (Frutos/KG) e Preço Unitário -->
+            <div class="row g-2 mb-2">
               <div class="col-6">
                 <label id="labelQuantidade" for="quantidade" class="form-label fw-bold small text-muted">QUANTIDADE (FRUTOS)</label>
-                <input type="number" id="quantidade" class="form-control form-control-lg" placeholder="0" min="1" step="any" required />
+                <input type="number" id="quantidade" class="form-control form-control-lg" placeholder="Ex: 10000" min="1" step="any" required />
               </div>
               <div class="col-6">
-                <label id="labelValorUnitario" for="valorUnitario" class="form-label fw-bold small text-muted">PREÇO UN. (R$/FRUTO)</label>
+                <label id="labelValorUnitario" for="valorUnitario" class="form-label fw-bold small text-muted">PREÇO UN. (R$/LITRO)</label>
                 <input type="number" id="valorUnitario" class="form-control form-control-lg" placeholder="0.00" min="0.01" step="0.01" required />
+              </div>
+            </div>
+
+            <!-- Painel Informativo de Conversão para Coco Verde -->
+            <div id="painelConversaoVerde" class="alert alert-light border small py-2 mb-3">
+              <div class="d-flex justify-content-between">
+                <span>Volume de Água Estimado:</span>
+                <strong id="displayLitrosEstimados" class="text-success">0 Litros</strong>
               </div>
             </div>
 
             <!-- Valor Total Calculado -->
             <div class="p-3 bg-light rounded mb-3 border">
               <div class="d-flex justify-content-between align-items-center">
-                <span class="fw-bold text-muted small">VALOR TOTAL ESTIMADO:</span>
+                <span class="fw-bold text-muted small">VALOR TOTAL A PAGAR:</span>
                 <span id="displayValorTotal" class="h4 mb-0 fw-bold text-danger">R$ 0,00</span>
               </div>
             </div>
@@ -87,9 +95,6 @@ export class FormView {
     `;
   }
 
-  /**
-   * Atribui os eventos de interatividade do formulário (cálculos e salvamento)
-   */
   static attachEvents(onSavedCallback?: () => void): void {
     const formCompra = document.getElementById('formCompra') as HTMLFormElement;
     const radioVerde = document.getElementById('tipoVerde') as HTMLInputElement;
@@ -99,30 +104,42 @@ export class FormView {
     const inputQuantidade = document.getElementById('quantidade') as HTMLInputElement;
     const inputValorUnitario = document.getElementById('valorUnitario') as HTMLInputElement;
     const displayValorTotal = document.getElementById('displayValorTotal') as HTMLSpanElement;
+    const painelConversaoVerde = document.getElementById('painelConversaoVerde') as HTMLDivElement;
+    const displayLitrosEstimados = document.getElementById('displayLitrosEstimados') as HTMLElement;
 
     if (!formCompra) return;
 
-    // Alternância dinâmica de unidades
     const atualizarUnidades = () => {
       if (radioVerde.checked) {
         labelQuantidade.textContent = 'QUANTIDADE (FRUTOS)';
-        labelValorUnitario.textContent = 'PREÇO UN. (R$/FRUTO)';
+        labelValorUnitario.textContent = 'PREÇO UN. (R$/LITRO)';
         inputQuantidade.placeholder = 'Ex: 10000';
+        painelConversaoVerde.classList.remove('d-none');
       } else {
         labelQuantidade.textContent = 'PESO PREVISTO (KG)';
         labelValorUnitario.textContent = 'PREÇO UN. (R$/KG)';
         inputQuantidade.placeholder = 'Ex: 15000';
+        painelConversaoVerde.classList.add('d-none');
       }
-      calcularValorTotal();
+      calcularTotais();
     };
 
-    // Cálculo automático do total
-    const calcularValorTotal = () => {
+    const calcularTotais = () => {
       const qtd = parseFloat(inputQuantidade.value) || 0;
-      const preco = parseFloat(inputValorUnitario.value) || 0;
-      const total = qtd * preco;
+      const precoUn = parseFloat(inputValorUnitario.value) || 0;
+      let valorTotal = 0;
 
-      displayValorTotal.textContent = total.toLocaleString('pt-BR', {
+      if (radioVerde.checked) {
+        // Coco Verde: Frutos * 0.4L = Litros de água, pagos pelo R$/Litro
+        const litrosEstimados = qtd * LITROS_POR_FRUTO_VERDE;
+        displayLitrosEstimados.textContent = `${litrosEstimados.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} Litros`;
+        valorTotal = litrosEstimados * precoUn;
+      } else {
+        // Coco Seco: KG * R$/KG
+        valorTotal = qtd * precoUn;
+      }
+
+      displayValorTotal.textContent = valorTotal.toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL'
       });
@@ -130,10 +147,9 @@ export class FormView {
 
     radioVerde.addEventListener('change', atualizarUnidades);
     radioSeco.addEventListener('change', atualizarUnidades);
-    inputQuantidade.addEventListener('input', calcularValorTotal);
-    inputValorUnitario.addEventListener('input', calcularValorTotal);
+    inputQuantidade.addEventListener('input', calcularTotais);
+    inputValorUnitario.addEventListener('input', calcularTotais);
 
-    // Submissão do formulário
     formCompra.addEventListener('submit', (e: Event) => {
       e.preventDefault();
 
@@ -143,7 +159,12 @@ export class FormView {
       const logistica = (document.getElementById('logistica') as HTMLSelectElement).value as ModalidadeLogistica;
       const quantidade = parseFloat(inputQuantidade.value);
       const valorUnitario = parseFloat(inputValorUnitario.value);
-      const valorTotal = quantidade * valorUnitario;
+      
+      // Cálculo final do total baseado na regra de negócio correta
+      const valorTotal = radioVerde.checked 
+        ? (quantidade * LITROS_POR_FRUTO_VERDE) * valorUnitario 
+        : quantidade * valorUnitario;
+
       const observacao = (document.getElementById('observacao') as HTMLTextAreaElement).value;
 
       const novaCarga: CargaPayload = {
@@ -153,7 +174,7 @@ export class FormView {
           email: 'comprador@adelcoco.com',
           fornecedor,
           previsao_entrega: previsaoEntrega,
-          quantidade_prevista: quantidade,
+          quantidade_prevista: quantidade, // Frutos para verde, KG para seco
           valor_unitario: valorUnitario,
           valor_total: valorTotal,
           logistica,

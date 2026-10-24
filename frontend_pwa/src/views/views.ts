@@ -2,7 +2,9 @@ import { OfflineStore } from '../services/offlineStore';
 
 export class AppViews {
   
-  // Renderiza a tela "Minhas Compras" (Tela 8 do protótipo)
+  /**
+   * Renderiza a tela "Minhas Compras" com base na fila offline local
+   */
   static renderMinhasCompras(): string {
     const fila = OfflineStore.obterFila();
 
@@ -16,31 +18,34 @@ export class AppViews {
       `;
     }
 
-    let htmlCards = fila.map(item => `
-      <div class="card card-adel border-0 shadow-sm mb-3">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <div>
-              <span class="badge bg-secondary mb-1">${item.tipo_coco}</span>
-              <h6 class="fw-bold mb-0 text-dark">${item.comprador.fornecedor}</h6>
+    let htmlCards = fila.map(item => {
+      const unidadeText = item.tipo_coco === 'Coco Verde' ? 'litros' : 'kg';
+      return `
+        <div class="card card-adel border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <span class="badge ${item.tipo_coco === 'Coco Verde' ? 'bg-success' : 'bg-warning text-dark'} mb-1">${item.tipo_coco}</span>
+                <h6 class="fw-bold mb-0 text-dark">${item.comprador.fornecedor}</h6>
+              </div>
+              <span class="badge bg-warning text-dark"><i class="bi bi-clock-history me-1"></i>Pendente / Salvo</span>
             </div>
-            <span class="badge bg-warning text-dark"><i class="bi bi-clock-history me-1"></i>Pendente / Salvo</span>
-          </div>
-          <hr class="my-2 text-muted opacity-25">
-          <div class="row g-2 small text-muted">
-            <div class="col-6">
-              <strong>Quantidade:</strong> ${item.comprador.quantidade_prevista.toLocaleString()} ${item.tipo_coco === 'Coco Verde' ? 'frutos' : 'kg'}
-            </div>
-            <div class="col-6">
-              <strong>Valor Total:</strong> ${item.comprador.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-            </div>
-            <div class="col-12">
-              <strong>Previsão de Entrega:</strong> ${item.comprador.previsao_entrega}
+            <hr class="my-2 text-muted opacity-25">
+            <div class="row g-2 small text-muted">
+              <div class="col-6">
+                <strong>Volume/Peso:</strong> ${item.comprador.quantidade_prevista.toLocaleString('pt-BR')} ${unidadeText}
+              </div>
+              <div class="col-6">
+                <strong>Valor Total:</strong> ${item.comprador.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </div>
+              <div class="col-12">
+                <strong>Previsão de Entrega:</strong> ${item.comprador.previsao_entrega}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     return `
       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -51,7 +56,9 @@ export class AppViews {
     `;
   }
 
-  // Renderiza a tela "Projeção de Estoque" (Tela 6 do protótipo)
+  /**
+   * Renderiza a tela "Projeção de Estoque"
+   */
   static renderProjecaoEstoque(): string {
     return `
       <div class="card card-adel border-0 shadow-sm p-3 mb-3">
@@ -68,10 +75,10 @@ export class AppViews {
               </tr>
             </thead>
             <tbody>
-              <tr><td>Seg 20/10</td><td>48.000</td><td>2 caminhões</td></tr>
-              <tr><td>Ter 21/10</td><td>36.000</td><td>1 caminhão</td></tr>
-              <tr><td>Qua 22/10</td><td>48.000</td><td>2 caminhões</td></tr>
-              <tr><td>Qui 23/10</td><td>48.000</td><td>2 caminhões</td></tr>
+              <tr><td>Seg 20/10</td><td>48.000 L</td><td>2 caminhões</td></tr>
+              <tr><td>Ter 21/10</td><td>36.000 L</td><td>1 caminhão</td></tr>
+              <tr><td>Qua 22/10</td><td>48.000 L</td><td>2 caminhões</td></tr>
+              <tr><td>Qui 23/10</td><td>48.000 L</td><td>2 caminhões</td></tr>
             </tbody>
           </table>
         </div>
@@ -79,13 +86,15 @@ export class AppViews {
     `;
   }
 
-  // Renderiza a tela "Teto de Preço" (Tela 7 do protótipo)
+  /**
+   * Renderiza a tela "Teto de Preço"
+   */
   static renderTetoPreco(): string {
     return `
       <div class="card card-adel border-0 shadow-sm p-4 text-center mb-3">
         <span class="badge bg-success mb-2 p-2">Faixa de Preço Permitida</span>
         <h6 class="text-muted small">Preço máximo recomendado pela diretoria</h6>
-        <h2 class="fw-bold text-danger mb-3">R$ 1,40 <small class="fs-6 text-muted">/ kg ou fruto</small></h2>
+        <h2 class="fw-bold text-danger mb-3">R$ 1,40 <small class="fs-6 text-muted">/ litro ou kg</small></h2>
         <hr class="text-muted opacity-25">
         <div class="text-start small text-muted">
           <p class="mb-1"><strong>Média praticada:</strong> R$ 1,18</p>
