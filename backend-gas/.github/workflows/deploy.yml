@@ -1,0 +1,75 @@
+
+name: Deploy Adel Coco API
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: adel-coco-api-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Configurar credenciais do Google
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+          SCRIPT_ID: ${{ secrets.SCRIPT_ID }}
+        run: |
+          test -n "$CLASPRC_JSON"
+          test -n "$SCRIPT_ID"
+
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+
+          printf '{"scriptId":"%s","rootDir":"."}\n' \
+            "$SCRIPT_ID" > .clasp.json
+
+      - name: Sincronizar código
+        run: npx clasp push --force
+
+      - name: Criar versão
+        id: version
+        run: |
+          OUTPUT="$(npx clasp version "CI ${GITHUB_SHA}")"
+          echo "$OUTPUT"
+
+          VERSION="$(printf '%s\n' "$OUTPUT" |
+            grep -oE '[0-9]+' | tail -n 1)"
+
+          if [ -z "$VERSION" ]; then
+            echo "Não foi possível identificar a versão criada."
+            exit 1
+          fi
+
+          echo "number=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Atualizar implantação existente
+        env:
+          DEPLOYMENT_ID: ${{ secrets.DEPLOYMENT_ID }}
+          VERSION: ${{ steps.version.outputs.number }}
+        run: |
+          test -n "$DEPLOYMENT_ID"
+          npx clasp deploy \
+            -i "$DEPLOYMENT_ID" \
+            -V "$VERSION" \
+            -d "Release ${GITHUB_SHA}"

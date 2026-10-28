@@ -1,95 +1,72 @@
-import { OfflineStore } from './offlineStore';
 import type { CargaPayload } from '../types/compra';
+import { OfflineStore } from './offlineStore';
 
-// URL do Web App do Google Apps Script (Será substituída pela URL real após o deploy do GAS)
-const GAS_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbwjc6rrBevE3N0Kc_3-1qtDtsIrK97NyO_kocSk0El7pTZTOuGrmymau71DYBwzj1kL/exec';
+// URL do Web App implantado no Google Apps Script
+const GAS_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbz--1Y7hNTJDORisst5Uo4LHVoF7RWUz-1ixJPHE52gTNE3ySYhTAZJu_whF03ynHQ/exec';  
 
 export class SyncService {
-  private static sincronizando = false;
+  /**
+   * Alias para compatibilidade com chamadas no main.ts
+   */
+  static async sincronizarFila(onSynced?: () => void): Promise<void> {
+    return this.sincronizacaoEmBackground(onSynced);
+  }
 
   /**
-   * Dispara o processo de sincronização dos itens armazenados na fila local
+   * Envia os itens pendentes da fila para o Google Apps Script (Stage)
    */
-  static async sincronizarFila(onSuccessCallback?: () => void): Promise<void> {
-    if (this.sincronizando) return;
-
+  static async sincronizacaoEmBackground(onSynced?: () => void): Promise<void> {
     const fila = OfflineStore.obterFila();
     if (fila.length === 0) return;
 
-    if (!navigator.onLine) {
-      console.log('Dispositivo offline. Sincronização adiada.');
-      return;
-    }
+    const novaFila: CargaPayload[] = [];
 
-    this.sincronizando = true;
-    console.log(`Iniciando sincronização de ${fila.length} registro(s)...`);
-
-    const itensParaManter: CargaPayload[] = [];
-
-    for (const item of fila) {
-      try {
-        const sucesso = await this.enviarParaGAS(item);
-        if (!sucesso) {
-          // Se falhou no envio, mantém o item na fila para tentar novamente depois
-          itensParaManter.push(item);
-        }
-      } catch (error) {
-        console.error('Erro ao enviar item:', error);
-        itensParaManter.push(item);
+    for (const carga of fila) {
+      const enviado = await this.enviarParaGAS(carga);
+      if (!enviado) {
+        novaFila.push(carga); // Mantém na fila se falhar a rede
       }
     }
 
-    // Atualiza a fila mantendo apenas o que não pôde ser enviado
-    if (itensParaManter.length === 0) {
-      OfflineStore.limparFila();
-    } else {
-      localStorage.setItem('adel_compras_offline_queue', JSON.stringify(itensParaManter));
-    }
+    // Atualiza o localStorage apenas com o que restou na fila
+    localStorage.setItem('adel_compras_offline_queue', JSON.stringify(novaFila));
 
-    this.sincronizando = false;
-
-    if (onSuccessCallback) {
-      onSuccessCallback();
+    if (onSynced && fila.length !== novaFila.length) {
+      onSynced();
     }
   }
 
   /**
-   * Realiza a requisição HTTP POST para o endpoint do Google Apps Script
+   * Dispara o POST para o Web App do GAS contornando o bloqueio de CORS com 'no-cors'
    */
   private static async enviarParaGAS(payload: CargaPayload): Promise<boolean> {
     try {
-      const response = await fetch(GAS_ENDPOINT_URL, {
+      await fetch(GAS_ENDPOINT_URL, {
         method: 'POST',
+        mode: 'no-cors',
         headers: {
-          'Content-Type': 'text/plain;charset=utf-8', // GAS exige text/plain para evitar erro de CORS em chamadas simples
+          'Content-Type': 'text/plain;charset=utf-8',
         },
         body: JSON.stringify(payload),
       });
 
-      if (response.ok) {
-        const resultado = await response.json();
-        return resultado.status === 'success';
-      }
-      return false;
+      return true;
     } catch (error) {
-      console.error('Falha na comunicação com o servidor GAS:', error);
+      console.error('Falha de conexão ao enviar carga para o GAS:', error);
       return false;
     }
   }
 
   /**
-   * Registra os ouvintes globais para sincronização automática
+   * Inicializa os ouvintes de rede para sincronizar automaticamente
    */
-  static inicializarOuvintes(onUpdateUI: () => void): void {
-    // Tenta sincronizar imediatamente assim que o sinal de internet voltar
+  static inicializarOuvintes(onSynced?: () => void): void {
     window.addEventListener('online', () => {
-      console.log('Conexão restabelecida. Disparando sincronização...');
-      this.sincronizarFila(onUpdateUI);
+      this.sincronizacaoEmBackground(onSynced);
     });
 
-    // Tenta sincronizar na inicialização do app caso já esteja online
     if (navigator.onLine) {
-      this.sincronizarFila(onUpdateUI);
+      this.sincronizacaoEmBackground(onSynced);
     }
   }
 }

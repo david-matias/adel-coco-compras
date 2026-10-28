@@ -46,7 +46,7 @@ export class FormView {
                 <label for="logistica" class="form-label fw-bold small text-muted">LOGÍSTICA</label>
                 <select id="logistica" class="form-select form-select-lg" required>
                   <option value="TERCEIRO">Terceiro</option>
-                  <option value="FROTA">Frota Própria</option>
+                  <option value="FROTA">Frota Adel Coco</option>
                 </select>
               </div>
             </div>
