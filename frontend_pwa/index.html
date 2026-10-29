@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#A62B2B" />
+    <title>Adel Coco - Portal do Comprador</title>
+  </head>
+  <body class="bg-light pb-5 mb-4">
+    <nav class="navbar navbar-dark bg-adel sticky-top shadow-sm py-2">
+      <div class="container-fluid d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <img src="./logo.png" alt="Adel Coco" class="logo-navbar" style="height: 35px;" />
+          <span class="navbar-brand mb-0 h6 fw-bold text-white">Portal do Comprador</span>
+        </div>
+        <span id="statusConexao" class="badge bg-success">
+          <i class="bi bi-wifi me-1"></i>Online
+        </span>
+      </div>
+    </nav>
+
+    <div id="bannerOffline" class="alert alert-warning mb-0 text-center rounded-0 d-none small py-2" role="alert">
+      <i class="bi bi-cloud-slash me-1"></i>
+      <span id="textoPendentes">Existem lançamentos salvos no aparelho aguardando conexão.</span>
+    </div>
+
+    <main class="container py-3" id="appContainer"></main>
+
+    <nav class="navbar fixed-bottom bg-white border-top shadow-sm py-1">
+      <div class="container-fluid d-flex justify-content-around text-center">
+        <button class="btn text-danger p-0 nav-btn" data-target="form">
+          <i class="bi bi-plus-circle-fill fs-4 d-block"></i>
+          <small style="font-size: 10px;" class="fw-bold">Nova Carga</small>
+        </button>
+        <button class="btn text-muted p-0 nav-btn" data-target="minhas-compras">
+          <i class="bi bi-list-check fs-4 d-block"></i>
+          <small style="font-size: 10px;" class="fw-bold">Minhas</small>
+        </button>
+        <button class="btn text-muted p-0 nav-btn" data-target="projecao">
+          <i class="bi bi-graph-up-arrow fs-4 d-block"></i>
+          <small style="font-size: 10px;" class="fw-bold">Estoque</small>
+        </button>
+        <button class="btn text-muted p-0 nav-btn" data-target="teto-preco">
+          <i class="bi bi-tag-fill fs-4 d-block"></i>
+          <small style="font-size: 10px;" class="fw-bold">Teto Preço</small>
+        </button>
+      </div>
+    </nav>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
