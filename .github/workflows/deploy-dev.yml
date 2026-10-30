@@ -1,4 +1,3 @@
-
 name: Deploy Development to GitHub Pages
 
 on:
@@ -45,8 +44,19 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
+      - name: Validar configuração da API
+        run: |
+          if [ -z "$VITE_GAS_API_URL" ]; then
+            echo "Erro: VITE_GAS_API_URL não configurada"
+            exit 1
+          fi
+        env:
+          VITE_GAS_API_URL: ${{ vars.VITE_GAS_API_URL }}
+
       - name: Gerar build de desenvolvimento
         run: npm run build -- --base=/adel-coco-compras/
+        env:
+          VITE_GAS_API_URL: ${{ vars.VITE_GAS_API_URL }}
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
