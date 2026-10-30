@@ -24,7 +24,7 @@ function createPurchase(payload, context) {
     const now = new Date();
     const row = buildNewRecord(payload, id, now, context.user);
 
-    appendRecord(sheet, row);
+    const rowIndex = appendRecord(sheet, row);
 
     auditEvent({
       request_id: context.requestId,
