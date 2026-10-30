@@ -1,5 +1,6 @@
 import type { CargaPayload, TipoCoco, ModalidadeLogistica } from '../types/compra';
 import { OfflineStore } from '../services/offlineStore';
+import { abrirWhatsAppComMensagem, gerarMensagemCompraWhatsApp } from '../services/whatsapp';
 
 // Constante padrão de rendimento industrial para o Coco Verde
 const LITROS_POR_FRUTO_VERDE = 0.4; // 400ml por fruto
@@ -193,7 +194,25 @@ export class FormView {
       };
 
       OfflineStore.salvarNaFila(novaCarga);
-      alert('Carga salva neste aparelho. Ela só será considerada sincronizada após confirmação do servidor.');
+
+      // A carga continua salva mesmo se o WhatsApp não abrir ou o usuário não enviar.
+      const mensagemWhatsApp = gerarMensagemCompraWhatsApp(novaCarga);
+      document.getElementById('painelWhatsAppCompartilhamento')?.remove();
+      const painelWhatsApp = document.createElement('div');
+      painelWhatsApp.id = 'painelWhatsAppCompartilhamento';
+      painelWhatsApp.className = 'alert alert-success mt-3 mb-0';
+      painelWhatsApp.innerHTML = `
+        <div class="fw-bold mb-1"><i class="bi bi-check-circle-fill me-1"></i>Compra salva neste aparelho</div>
+        <p class="small mb-2">Prepare a mensagem e escolha o grupo no WhatsApp. O envio só acontece quando você confirmar no aplicativo.</p>
+        <button type="button" id="btnCompartilharWhatsApp" class="btn btn-success w-100">
+          <i class="bi bi-whatsapp me-2"></i>Preparar mensagem no WhatsApp
+        </button>
+      `;
+      formCompra.insertAdjacentElement('afterend', painelWhatsApp);
+      document.getElementById('btnCompartilharWhatsApp')?.addEventListener('click', () => {
+        abrirWhatsAppComMensagem(mensagemWhatsApp);
+      });
+
       formCompra.reset();
       atualizarUnidades();
 
