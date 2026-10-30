@@ -24,7 +24,7 @@ function createPurchase(payload, context) {
     const now = new Date();
     const row = buildNewRecord(payload, id, now, context.user);
 
-    const rowIndex = appendRecord(sheet, row);
+    appendRecord(sheet, row);
 
     auditEvent({
       request_id: context.requestId,
@@ -82,8 +82,8 @@ function updatePurchase(payload, context) {
     verifyVersion(current, payload);
 
     const updated = mergeRecord(current, payload);
-    updated[12] = new Date();                 // Data Atualização
-    updated[15] = context.user;               // Atualizado Por
+    updated[12] = new Date();                   // Data Atualização
+    updated[15] = context.user;                 // Atualizado Por
     updated[17] = Number(current[17] || 1) + 1; // Versão
 
     writeRecord(sheet, rowIndex, updated);
@@ -111,14 +111,33 @@ function updatePurchase(payload, context) {
 }
 
 function savePurchase(payload, context) {
-  // Compatibilidade com o frontend antigo.
-  // Um ID explícito sempre significa intenção de editar.
-  // Se não existir, a operação falha em vez de duplicar.
-  if (normalizeId(payload.id_carga)) {
-    return updatePurchase(payload, context);
+  validatePayload(payload);
+
+  const id = normalizeId(payload.id_carga);
+
+  // Sem ID: cria uma nova carga e gera um ID.
+  if (!id) {
+    return createPurchase(payload, context);
   }
 
-  return createPurchase(payload, context);
+  // Com ID: verifica se a carga realmente existe.
+  const sheet = getDatabase();
+  const matches = findRowsById(sheet, id);
+
+  if (matches.length > 1) {
+    throw apiError(
+      'DUPLICATE_ID',
+      'Há mais de uma linha com este ID. Corrija a planilha antes de salvar.'
+    );
+  }
+
+  // ID gerado pelo PWA, mas ainda não registrado: cria usando o mesmo ID.
+  if (matches.length === 0) {
+    return createPurchase(payload, context);
+  }
+
+  // A carga já existe: atualiza o registro existente.
+  return updatePurchase(payload, context);
 }
 
 function cancelPurchase(payload, context) {
@@ -266,7 +285,6 @@ function listPurchases(params) {
 // CONSTRUÇÃO E CONVERSÃO DE REGISTROS
 // ============================================================================
 
-
 function buildNewRecord(payload, id, now, user) {
   const buyer = payload.comprador || {};
 
@@ -322,7 +340,6 @@ function buildNewRecord(payload, id, now, user) {
     1
   ];
 }
-
 
 function mergeRecord(current, payload) {
   const row = current.slice();
