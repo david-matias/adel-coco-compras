@@ -1,0 +1,61 @@
+name: Validar Adel Coco Compras
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - feature/v1.1
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Build do PWA
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend_pwa
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend_pwa/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Validar TypeScript e gerar build
+        env:
+          # A compilação não precisa acessar o backend real.
+          VITE_GAS_API_URL: https://example.invalid/exec
+        run: npm run build
+
+  backend-syntax:
+    name: Sintaxe do Apps Script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verificar sintaxe dos arquivos .gs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in backend-gas/*.gs; do
+            echo "Validando $file"
+            cp "$file" /tmp/apps-script-check.js
+            node --check /tmp/apps-script-check.js
+          done
