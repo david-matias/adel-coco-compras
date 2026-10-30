@@ -127,7 +127,7 @@ export class FormView {
     const atualizarContadorEntregas = () => {
       const total = deliveryRows.querySelectorAll('.delivery-row').length;
       contadorEntregas.textContent = total === 1 ? '1 entrega' : `${total} entregas`;
-      deliveryRows.querySelectorAll('.delivery-row').forEach((row, index) => {
+      deliveryRows.querySelectorAll('.delivery-row').forEach(row => {
         const container = row.querySelector('.delivery-remove-container') as HTMLDivElement;
         container.innerHTML = total > 1
           ? '<button type="button" class="btn btn-sm btn-outline-danger btn-remover-entrega"><i class="bi bi-trash me-1"></i>Remover entrega</button>'
